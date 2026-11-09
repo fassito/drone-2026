@@ -21,14 +21,17 @@
 #define MPU9250_I2C_SLV0_ADDR  0x25
 #define MPU9250_I2C_SLV0_REG   0x26
 #define MPU9250_I2C_SLV0_CTRL  0x27
+#define MPU9250_I2C_SLV0_DO    0x63
 #define MPU9250_I2C_SLV4_ADDR  0x31
 #define MPU9250_I2C_SLV4_REG   0x32
 #define MPU9250_I2C_SLV4_DO    0x33
 #define MPU9250_I2C_SLV4_CTRL  0x34
+#define MPU9250_I2C_SLV4_DI    0x35
 #define MPU9250_I2C_MST_STATUS 0x36
 #define MPU9250_EXT_SENS_DATA  0x49
 
 #define AK8963_ADDR 0x0C
+#define AK8963_WIA  0x00
 #define AK8963_ST1   0x02
 #define AK8963_XOUT  0x03
 #define AK8963_CNTL1 0x0A
@@ -50,6 +53,8 @@ static float mag_offsets[3] = {0.0f, 0.0f, 0.0f};
 static float mag_scale[3] = {1.0f, 1.0f, 1.0f};
 static bool mag_calibrated = false;
 static bool mag_present = false;
+static uint8_t mag_wia = 0;
+static uint8_t mag_cntl1 = 0;
 static uint32_t last_us = 0;
 static bool initialized = false;
 static attitude_t last_att;
@@ -85,11 +90,21 @@ static void read_regs(uint8_t reg, uint8_t *buf, uint8_t n) {
 
 // ---------- AK8963 vía I2C master del MPU-9250 ----------
 static void ak8963_write(uint8_t reg, uint8_t val) {
-    write_reg(MPU9250_I2C_SLV4_ADDR, AK8963_ADDR);   // escritura (sin flag read)
-    write_reg(MPU9250_I2C_SLV4_REG, reg);
-    write_reg(MPU9250_I2C_SLV4_DO, val);
-    write_reg(MPU9250_I2C_SLV4_CTRL, 0x80);          // enable
-    delay(2);
+    // Escritura vía SLV0 (método canónico SparkFun): address sin flag read,
+    // registro, dato, enable + 1 byte. Después se reconfigura SLV0 para leer.
+    write_reg(MPU9250_I2C_SLV0_ADDR, AK8963_ADDR);
+    write_reg(MPU9250_I2C_SLV0_REG, reg);
+    write_reg(MPU9250_I2C_SLV0_DO, val);
+    write_reg(MPU9250_I2C_SLV0_CTRL, 0x81);
+    delay(3);
+}
+
+static uint8_t ak8963_read_reg(uint8_t reg) {
+    write_reg(MPU9250_I2C_SLV0_ADDR, AK8963_ADDR | 0x80);
+    write_reg(MPU9250_I2C_SLV0_REG, reg);
+    write_reg(MPU9250_I2C_SLV0_CTRL, 0x81);   // enable + 1 byte
+    delay(3);
+    return read_reg(MPU9250_EXT_SENS_DATA);
 }
 
 static void ak8963_init(void) {
@@ -97,22 +112,36 @@ static void ak8963_init(void) {
     write_reg(MPU9250_USER_CTRL, read_reg(MPU9250_USER_CTRL) | 0x20);
     write_reg(MPU9250_I2C_MST_CTRL, 0x0D);
 
-    // AK8963: modo continuo 2 (100 Hz), salida 16 bits.
-    ak8963_write(AK8963_CNTL1, 0x16);
-
-    // SLV0: leer 7 bytes (ST1 + X/Y/Z) desde 0x02.
+    // Sonda de identidad del AK8963 (0x48) vía SLV0 (1 byte) — método canónico.
     write_reg(MPU9250_I2C_SLV0_ADDR, AK8963_ADDR | 0x80);
-    write_reg(MPU9250_I2C_SLV0_REG, AK8963_ST1);
-    write_reg(MPU9250_I2C_SLV0_CTRL, 0x86);   // enable + 6 bytes extra
+    write_reg(MPU9250_I2C_SLV0_REG, AK8963_WIA);
+    write_reg(MPU9250_I2C_SLV0_CTRL, 0x81);   // enable + 1 byte
+    delay(3);
+    mag_wia = read_reg(MPU9250_EXT_SENS_DATA);
+
+    if (mag_wia == 0x48) {
+        // AK8963: modo continuo 2 (100 Hz), salida 16 bits.
+        ak8963_write(AK8963_CNTL1, 0x16);
+        mag_cntl1 = ak8963_read_reg(AK8963_CNTL1);   // verificar escritura (0x16)
+
+        // SLV0: leer 7 bytes (ST1 + X/Y/Z) desde 0x02.
+        write_reg(MPU9250_I2C_SLV0_ADDR, AK8963_ADDR | 0x80);
+        write_reg(MPU9250_I2C_SLV0_REG, AK8963_ST1);
+        write_reg(MPU9250_I2C_SLV0_CTRL, 0x87);   // enable + 7 bytes (ST1+X+Y+Z)
+
+        mag_present = true;
+    }
 }
 
 static bool read_mag_raw(float mag[3]) {
+    if (!mag_present) return false;
+
     uint8_t buf[7];
     read_regs(MPU9250_EXT_SENS_DATA, buf, 7);
 
-    if (!(buf[0] & 0x01)) return false;   // DRDY no listo
-    if (buf[0] & 0x08) return false;      // desbordamiento
-
+    // Nota: no exigimos DRDY (bit0 de ST1) porque el I2C master del MPU lee
+    // continuamente y borra el flag. En modo continuo el buffer siempre
+    // contiene la última muestra válida.
     mag[0] = (float)(int16_t)((buf[1] | (buf[2] << 8)));
     mag[1] = (float)(int16_t)((buf[3] | (buf[4] << 8)));
     mag[2] = (float)(int16_t)((buf[5] | (buf[6] << 8)));
@@ -169,12 +198,6 @@ void mpu9250_init(void) {
 
 #if MPU9250_USE_MAG
     ak8963_init();
-    // Comprobar presencia con una lectura de prueba.
-    float probe[3];
-    for (int i = 0; i < 5 && !mag_present; i++) {
-        mag_present = read_mag_raw(probe);
-        delay(5);
-    }
     mag_cal_load();
 #endif
 
@@ -232,6 +255,18 @@ void mpu9250_calibrate_mag(void) {
 
 bool mpu9250_mag_valid(void) {
     return mag_present && mag_calibrated;
+}
+
+bool mpu9250_mag_present(void) {
+    return mag_present;
+}
+
+uint8_t mpu9250_mag_wia(void) {
+    return mag_wia;
+}
+
+uint8_t mpu9250_mag_cntl1(void) {
+    return mag_cntl1;
 }
 
 void mpu9250_get_mag(float mag[3]) {

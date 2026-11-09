@@ -1,6 +1,7 @@
 #include "telemetry/cli.h"
 #include "telemetry/telemetry_data.h"
 #include "telemetry/wifi_cli.h"
+#include "telemetry/oled_display.h"
 
 #include "safety/failsafe.h"
 #include "safety/selftest.h"
@@ -32,6 +33,7 @@ static void print_help(Print &out) {
     out.println("autotune start|stop|status");
     out.println("pid save | pid load");
     out.println("selftest | json");
+    out.println("oled status|attitude|gps|obstacle");
     out.println("wifi on|off | reboot");
 }
 
@@ -78,7 +80,14 @@ void cli_process_line(const char *line, Print &out) {
         out.print("roll="); out.print(a.roll * RAD_TO_DEG, 1);
         out.print(" pitch="); out.print(a.pitch * RAD_TO_DEG, 1);
         out.print(" yaw="); out.print(a.yaw * RAD_TO_DEG, 1);
-        out.print(" gyro_z="); out.println(a.gyro_z, 2);
+        out.println();
+        out.print("gyro_x="); out.print(a.gyro_x, 2);
+        out.print(" gyro_y="); out.print(a.gyro_y, 2);
+        out.print(" gyro_z="); out.print(a.gyro_z, 2);
+        out.println();
+        out.print("mag="); out.print(mpu9250_mag_present() ? 1 : 0);
+        out.print(" cal="); out.print(mpu9250_mag_valid() ? 1 : 0);
+        out.print(" valid="); out.println(a.valid ? 1 : 0);
     } else if (strcmp(cmd, "gps") == 0) {
         const gps_state_t &g = g_telemetry.gps;
         out.print("fix="); out.print(g.fix);
@@ -222,6 +231,18 @@ void cli_process_line(const char *line, Print &out) {
         failsafe_disarm();
         esc_disarm();
         out.println("OK desarmado");
+    } else if (strcmp(cmd, "oled") == 0) {
+        if (sp && strstr(sp + 1, "status")) {
+            oled_set_view(OLED_VIEW_STATUS); out.println("OK vista status");
+        } else if (sp && strstr(sp + 1, "attitude")) {
+            oled_set_view(OLED_VIEW_ATTITUDE); out.println("OK vista attitude");
+        } else if (sp && strstr(sp + 1, "gps")) {
+            oled_set_view(OLED_VIEW_GPS); out.println("OK vista gps");
+        } else if (sp && strstr(sp + 1, "obstacle")) {
+            oled_set_view(OLED_VIEW_OBSTACLE); out.println("OK vista obstacle");
+        } else {
+            out.println("uso: oled status|attitude|gps|obstacle");
+        }
     } else if (strcmp(cmd, "wifi") == 0) {
         if (sp && strstr(sp + 1, "on")) {
             wifi_set_enabled(true);

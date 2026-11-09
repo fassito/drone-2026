@@ -1,5 +1,6 @@
 #include "telemetry/oled_display.h"
 #include "telemetry/telemetry_data.h"
+#include "sensors/mpu9250.h"
 #include "config.h"
 
 #include <Wire.h>
@@ -8,7 +9,7 @@
 // SSD1306 0.96" 128x64. Para SH1106 1.3" usar la librería SH110X
 // (ver skill oled-display/references/ssd1306-vs-sh1106.md).
 static Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
-static oled_view_t view = OLED_VIEW_STATUS;
+static oled_view_t view = OLED_VIEW_ATTITUDE;
 static bool ok = false;
 
 #ifndef RAD_TO_DEG
@@ -42,10 +43,13 @@ void oled_render(oled_view_t v) {
 
     switch (v) {
         case OLED_VIEW_ATTITUDE:
-            display.println("ATITUD");
-            display.print("R:"); display.println(t.attitude.roll * RAD_TO_DEG, 0);
-            display.print("P:"); display.println(t.attitude.pitch * RAD_TO_DEG, 0);
-            display.print("Y:"); display.println(t.attitude.yaw * RAD_TO_DEG, 0);
+            display.println("ATITUD (grados)");
+            display.print("R:"); display.print(t.attitude.roll * RAD_TO_DEG, 1);
+            display.print(" P:"); display.println(t.attitude.pitch * RAD_TO_DEG, 1);
+            display.print("Y:"); display.print(t.attitude.yaw * RAD_TO_DEG, 1);
+            display.print("  z:"); display.println(t.attitude.gyro_z, 1);
+            display.print("mag:");
+            display.println(mpu9250_mag_valid() ? "OK" : "NO");
             break;
         case OLED_VIEW_GPS:
             display.println("GPS");

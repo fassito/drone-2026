@@ -24,6 +24,10 @@
 #include "flight/flight_runtime.h"
 #include "flight/pid_store.h"
 
+#ifndef RAD_TO_DEG
+#define RAD_TO_DEG 57.29577951308232f
+#endif
+
 drone_telemetry_t g_telemetry;
 
 flight_control_t g_fc;
@@ -190,7 +194,7 @@ static void control_task(void *arg) {
                              &m2, &obs, 0.001f,
                              &roll_sp, &pitch_sp, &heading_err, &throttle_cmd);
             yaw_sp = att.yaw + heading_err;   // setpoint de ángulo desenvuelto
-            mode_eff = FLIGHT_MODE_ANGLE;
+            mode_eff = FLIGHT_MODE_NAV;
         } else if (mode_eff == FLIGHT_MODE_ANGLE) {
             roll_sp = rx.channel[0] * MAX_ANGLE_DEG * DEG_TO_RAD;
             pitch_sp = rx.channel[1] * MAX_ANGLE_DEG * DEG_TO_RAD;
@@ -239,10 +243,11 @@ static void control_task(void *arg) {
         if (ticks % LOOP_FREQ_HZ == 0) {
             g_telemetry.loop_hz = loops_in_second;
             loops_in_second = 0;
-            Serial.printf("[ctrl] %luHz mode=%d arm=%d rx=%d imu=%d\n",
+            Serial.printf("[ctrl] %luHz mode=%d arm=%d rx=%d imu=%d R=%.1f P=%.1f Y=%.1f\n",
                           (unsigned long)g_telemetry.loop_hz,
                           (int)g_flight_mode, (int)armed,
-                          (int)rx.link_ok, (int)att.valid);
+                          (int)rx.link_ok, (int)att.valid,
+                          att.roll * RAD_TO_DEG, att.pitch * RAD_TO_DEG, att.yaw * RAD_TO_DEG);
         }
     }
 }
@@ -324,7 +329,10 @@ void setup() {
 
 #if ENABLE_MPU9250
     mpu9250_init();
-    Serial.printf("[imu] WHO_AM_I=0x%02X (0x71=ok)\n", mpu9250_who_am_i());
+    Serial.printf("[imu] WHO_AM_I=0x%02X (0x71=ok) mag=%d wia=0x%02X cntl1=0x%02X cal=%d\n",
+                  mpu9250_who_am_i(), (int)mpu9250_mag_present(),
+                  mpu9250_mag_wia(), mpu9250_mag_cntl1(),
+                  (int)mpu9250_mag_valid());
 #endif
 #if ENABLE_IBUS
     ibus_init();

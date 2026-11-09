@@ -46,11 +46,17 @@ void flight_control_update(flight_control_t *fc, flight_mode_t mode,
                            float throttle, const attitude_t *att, float out[4]) {
     float rate_roll_sp, rate_pitch_sp, rate_yaw_sp;
 
-    if (mode == FLIGHT_MODE_ANGLE) {
+    if (mode == FLIGHT_MODE_ANGLE || mode == FLIGHT_MODE_NAV) {
         // Lazo externo: el error de ángulo genera un setpoint de rate.
         rate_roll_sp  = pid_step(&fc->angle_roll, roll_sp, att->roll);
         rate_pitch_sp = pid_step(&fc->angle_pitch, pitch_sp, att->pitch);
-        rate_yaw_sp   = pid_step(&fc->angle_yaw, yaw_sp, att->yaw);
+        if (mode == FLIGHT_MODE_NAV) {
+            // NAV: setpoint de yaw como ángulo (heading hold).
+            rate_yaw_sp = pid_step(&fc->angle_yaw, yaw_sp, att->yaw);
+        } else {
+            // ANGLE: el yaw se controla en rate (el stick da velocidad de giro).
+            rate_yaw_sp = yaw_sp;
+        }
     } else {
         // Modo rate: setpoints directos de velocidad angular.
         rate_roll_sp  = roll_sp;
