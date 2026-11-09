@@ -1,0 +1,73 @@
+#include "telemetry/oled_display.h"
+#include "telemetry/telemetry_data.h"
+#include "config.h"
+
+#include <Wire.h>
+#include <Adafruit_SSD1306.h>
+
+// SSD1306 0.96" 128x64. Para SH1106 1.3" usar la librería SH110X
+// (ver skill oled-display/references/ssd1306-vs-sh1106.md).
+static Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
+static oled_view_t view = OLED_VIEW_STATUS;
+static bool ok = false;
+
+#ifndef RAD_TO_DEG
+#define RAD_TO_DEG 57.29577951308232f
+#endif
+
+void oled_init(void) {
+    ok = display.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR);
+    if (ok) {
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(SSD1306_WHITE);
+        display.display();
+    }
+}
+
+void oled_set_view(oled_view_t v) {
+    view = v;
+}
+
+oled_view_t oled_get_view(void) {
+    return view;
+}
+
+void oled_render(oled_view_t v) {
+    if (!ok) return;
+
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    const drone_telemetry_t &t = g_telemetry;
+
+    switch (v) {
+        case OLED_VIEW_ATTITUDE:
+            display.println("ATITUD");
+            display.print("R:"); display.println(t.attitude.roll * RAD_TO_DEG, 0);
+            display.print("P:"); display.println(t.attitude.pitch * RAD_TO_DEG, 0);
+            display.print("Y:"); display.println(t.attitude.yaw * RAD_TO_DEG, 0);
+            break;
+        case OLED_VIEW_GPS:
+            display.println("GPS");
+            display.print("fix:"); display.println(t.gps.fix ? "SI" : "NO");
+            display.print("sat:"); display.println(t.gps.sats);
+            display.print("alt:"); display.println(t.gps.alt, 0);
+            break;
+        case OLED_VIEW_OBSTACLE:
+            display.println("OBSTACULOS");
+            display.print("F:"); display.print(t.obstacle.distance[0], 0);
+            display.print(" D:"); display.println(t.obstacle.distance[1], 0);
+            display.print("B:"); display.print(t.obstacle.distance[2], 0);
+            display.print(" I:"); display.println(t.obstacle.distance[3], 0);
+            break;
+        case OLED_VIEW_STATUS:
+        default:
+            display.println("DRONE-2026");
+            display.print("modo:"); display.println(t.flight_mode);
+            display.print("arm:"); display.println(t.failsafe.mode == FS_ARMED ? "SI" : "NO");
+            display.print("v:"); display.print(t.power.bus_voltage_v, 1);
+            display.print("V loop:"); display.println(t.loop_hz);
+            break;
+    }
+    display.display();
+}

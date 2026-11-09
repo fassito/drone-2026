@@ -1,0 +1,9 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Entornos y editores
+.vscode/
+.idea/
+*.code-workspace
