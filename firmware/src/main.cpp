@@ -4,6 +4,7 @@
 #include "config.h"
 #include "safety/failsafe.h"
 #include "safety/power_monitor.h"
+#include "safety/battery.h"
 #include "safety/indicators.h"
 #include "safety/blackbox.h"
 #include "sensors/mpu9250.h"
@@ -113,10 +114,14 @@ static void control_task(void *arg) {
         failsafe_set_imu_link(att.valid);
         failsafe_set_throttle_min(throttle_min);
         if (g_telemetry.power.valid) {
-            const float vbat = g_telemetry.power.bus_voltage_v;
-            const bool plausible = vbat > BATTERY_MIN_PLAUSIBLE_V;
-            failsafe_set_battery_low(plausible && vbat < BATTERY_CRITICAL_V);
-            failsafe_set_overcurrent(plausible
+            const battery_state_t bs = battery_evaluate(
+                g_telemetry.power.bus_voltage_v, BATTERY_CELLS,
+                BATTERY_CAPACITY_MAH, BATTERY_LOW_V, BATTERY_CRITICAL_V,
+                BATTERY_MIN_PLAUSIBLE_V);
+            g_telemetry.battery = bs;
+            // LOW es un aviso (aterrizar); CRITICAL corta los motores.
+            failsafe_set_battery_low(bs.level == BATTERY_LEVEL_CRITICAL);
+            failsafe_set_overcurrent(bs.plausible
                                      && g_telemetry.power.current_a > MAX_CURRENT_A);
         }
         failsafe_tick();
@@ -146,11 +151,11 @@ static void control_task(void *arg) {
         }
         was_failsafe = now_failsafe;
 
-        const bool now_batt_low = failsafe_get_state().battery_low;
-        if (now_batt_low && !was_batt_low) {
+        const bool now_batt_warn = (g_telemetry.battery.level != BATTERY_LEVEL_OK);
+        if (now_batt_warn && !was_batt_low) {
             indicators_event(IND_BATTERY);
         }
-        was_batt_low = now_batt_low;
+        was_batt_low = now_batt_warn;
 
         // 5) Modo de vuelo desde el mando (CH6) si no está fijado por CLI.
         //    El modo NAV solo se activa por CLI (no desde el mando).

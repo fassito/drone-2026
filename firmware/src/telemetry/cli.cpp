@@ -97,10 +97,19 @@ void cli_process_line(const char *line, Print &out) {
         out.print(" alt="); out.println(g.alt, 1);
     } else if (strcmp(cmd, "power") == 0) {
         const power_state_t &p = g_telemetry.power;
+        const battery_state_t &b = g_telemetry.battery;
         out.print("v="); out.print(p.bus_voltage_v, 2);
-        out.print(" i="); out.print(p.current_a, 2);
+        out.print(" cell="); out.print(b.cell_voltage_v, 2);
+        out.print(" soc="); out.print(b.soc_percent, 0);
+        out.print("% rest="); out.print(b.remaining_mah, 0);
+        out.println("mAh");
+        out.print("i="); out.print(p.current_a, 2);
         out.print(" w="); out.print(p.power_w, 1);
-        out.print(" low="); out.println(power_monitor_battery_low(&p) ? 1 : 0);
+        out.print(" nivel=");
+        out.println(b.level == BATTERY_LEVEL_OK ? "OK"
+                    : (b.level == BATTERY_LEVEL_LOW ? "BAJA(aterrizar)"
+                                                    : "CRITICA(corte)"));
+        out.print("plausible="); out.println(b.plausible ? 1 : 0);
     } else if (strcmp(cmd, "obstacle") == 0) {
         obstacle_state_t s = obstacle_read();
         out.print("front="); out.print(s.distance[0], 0);

@@ -60,7 +60,8 @@
 // LiPo 4S (14.8 V nominal). Aviso a 3.50 V/celda y corte a 3.30 V/celda:
 // por debajo de 3.3 V la celda se degrada de forma irreversible.
 #define BATTERY_LOW_V     14.0f   // 4S: 3.50 V/celda → aterrizar
-#define BATTERY_CELLS    4        // celdas de la LiPo
+#define BATTERY_CELLS    4        // celdas de la LiPo (4S)
+#define BATTERY_CAPACITY_MAH 1550 // capacidad nominal del pack, para estimar mAh
 
 // Barómetro BMP388 (I2C) — comparte el bus I2C con OLED e INA219.
 #define BMP388_I2C_ADDR 0x76     // 0x77 si el pin SDO del BMP388 está a VCC

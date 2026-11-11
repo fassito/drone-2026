@@ -77,10 +77,13 @@ void oled_render(oled_view_t v) {
         case OLED_VIEW_STATUS:
         default:
             display.println("DRONE-2026");
-            display.print("modo:"); display.println(t.flight_mode);
-            display.print("arm:"); display.println(t.failsafe.mode == FS_ARMED ? "SI" : "NO");
-            display.print("v:"); display.print(t.power.bus_voltage_v, 1);
-            display.print("V loop:"); display.println(t.loop_hz);
+            display.print("modo:"); display.print(t.flight_mode);
+            display.print(" arm:"); display.println(t.failsafe.mode == FS_ARMED ? "SI" : "NO");
+            display.print("bat:"); display.print(t.power.bus_voltage_v, 1);
+            display.print("V "); display.print(t.battery.soc_percent, 0);
+            display.println("%");
+            display.print("rest:"); display.print(t.battery.remaining_mah, 0);
+            display.print("mAh loop:"); display.println(t.loop_hz);
             break;
     }
     display.display();

@@ -1,15 +1,20 @@
-Enable the INA219 now that it is detected on the bus
+Add battery energy management from pack voltage
 
-The module was miswired; after fixing it the scan shows 0x3C, 0x40 and
-0x76 and the chip reads back correctly ([ina] ok=1).
+The INA219 cannot see motor current (its shunt handles ~3.2 A and the ESCs
+bypass it), so energy management is derived from the pack voltage, which
+is the metric that actually reflects a LiPo's state of charge.
 
-- ENABLE_INA219 -> 1.
-- BATTERY_MIN_PLAUSIBLE_V (6.0 V): the failsafe now ignores voltage
-  readings below any real 4S pack. Without Vin+/Vin- wired the INA219
-  reads ~0.9 V, which would otherwise be taken as a flat battery and
-  block arming. A missing sensor now means "no voltage protection"
-  instead of a false "battery critical".
-
-Firmware builds, 136/136 host tests pass.
+- safety/battery: pure module with the LiPo discharge curve. Provides
+  cell voltage, state of charge, remaining mAh for a given pack capacity,
+  and a level (OK / LOW -> land / CRITICAL -> cut).
+- main: failsafe now uses CRITICAL for the motor cut and LOW for the
+  advisory beep, instead of the previous inline threshold check. Invalid
+  readings (below BATTERY_MIN_PLAUSIBLE_V) never trigger the failsafe.
+- CLI "power" now reports cell voltage, SoC %, remaining mAh and level.
+- OLED status view shows pack voltage, SoC % and remaining mAh.
+- config: BATTERY_CAPACITY_MAH 1550 for the 4S pack.
+- tests: new test_battery suite (23 checks) covering the curve, clamping,
+  monotonicity, remaining capacity, level thresholds and the implausible
+  reading case. Total 159 checks.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

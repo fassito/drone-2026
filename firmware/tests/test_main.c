@@ -12,6 +12,7 @@ void test_obstacle(void);
 void test_mission(void);
 void test_geofence(void);
 void test_failsafe(void);
+void test_battery(void);
 void test_autotune(void);
 void test_autopilot(void);
 void test_altitude(void);
@@ -31,6 +32,7 @@ int main(void) {
     test_mission();
     test_geofence();
     test_failsafe();
+    test_battery();
     test_autotune();
     test_autopilot();
     test_altitude();

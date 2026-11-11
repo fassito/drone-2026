@@ -26,7 +26,8 @@ for f in \
     radio/ibus_parser.cpp \
     sensors/madgwick.cpp \
     sensors/mag_calib.cpp \
-    safety/failsafe.cpp ; do
+    safety/failsafe.cpp \
+    safety/battery.cpp ; do
     o="$BUILD/$(echo "$f" | tr '/' '_').o"
     gcc -std=c17 -x c -I "$SRC" -c "$SRC/$f" -o "$o"
     objs+=("$o")
@@ -48,6 +49,7 @@ for t in \
     tests/test_mission.c \
     tests/test_geofence.c \
     tests/test_failsafe.c \
+    tests/test_battery.c \
     tests/test_autotune.c \
     tests/test_autopilot.c \
     tests/test_altitude.c \

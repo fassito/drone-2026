@@ -5,6 +5,7 @@
 #include "nav/obstacle.h"
 #include "sensors/bmp388.h"
 #include "safety/power_monitor.h"
+#include "safety/battery.h"
 #include "safety/failsafe.h"
 #include "flight/pid.h"
 
@@ -20,6 +21,7 @@ typedef struct {
     obstacle_state_t obstacle;
     baro_state_t baro;
     power_state_t power;
+    battery_state_t battery;
     failsafe_state_t failsafe;
     float motor_out[4];
     int flight_mode;       // 0=desarmado, 1=angle, 2=rate
