@@ -9,7 +9,7 @@
 // SSD1306 0.96" 128x64. Para SH1106 1.3" usar la librería SH110X
 // (ver skill oled-display/references/ssd1306-vs-sh1106.md).
 static Adafruit_SSD1306 display(OLED_WIDTH, OLED_HEIGHT, &Wire, -1);
-static oled_view_t view = OLED_VIEW_ATTITUDE;
+static oled_view_t view = OLED_VIEW_BARO;
 static bool ok = false;
 
 #ifndef RAD_TO_DEG
@@ -50,6 +50,16 @@ void oled_render(oled_view_t v) {
             display.print("  z:"); display.println(t.attitude.gyro_z, 1);
             display.print("mag:");
             display.println(mpu9250_mag_valid() ? "OK" : "NO");
+            break;
+        case OLED_VIEW_BARO:
+            display.println("BAROMETRO");
+            display.print("t:"); display.print(t.baro.temperature_c, 1);
+            display.println(" C");
+            display.print("p:"); display.print(t.baro.pressure_hpa, 1);
+            display.println(" hPa");
+            display.print("alt:"); display.print(t.baro.altitude_m, 1);
+            display.println(" m");
+            display.print("val:"); display.println(t.baro.valid ? "SI" : "NO");
             break;
         case OLED_VIEW_GPS:
             display.println("GPS");

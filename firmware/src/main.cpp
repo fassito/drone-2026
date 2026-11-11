@@ -345,6 +345,15 @@ void setup() {
     pinMode(I2C_SCL_PIN, INPUT_PULLUP);
     Serial.print("[i2c] bmp init...\n"); Serial.flush();
     bmp388_init();
+    {
+        // Primeras lecturas del BMP388 suelen estar desviadas: descartar 4
+        // y mostrar la 5ª (asentada). Fuera del lazo de control, sin problema.
+        baro_state_t b;
+        for (int i = 0; i < 5; i++) { b = bmp388_read(); delay(50); }
+        Serial.printf("[baro] ok=%d t=%.1fC p=%.2fhPa alt=%.2fm\n",
+                      (int)b.valid, b.temperature_c, b.pressure_hpa, b.altitude_m);
+        Serial.flush();
+    }
     Serial.print("[i2c] ina init...\n"); Serial.flush();
     power_monitor_init();
     Serial.print("[i2c] oled init...\n"); Serial.flush();

@@ -9,7 +9,13 @@ static float ground_alt_m = 0.0f;
 static bool have_ref = false;
 
 void bmp388_init(void) {
-    ok = bmp.begin_I2C(BMP388_I2C_ADDR, &Wire);
+    // El CJMCU-388 a veces no responde en el primer contacto tras el
+    // encendido (la primera transacción I2C da timeout). Reintentamos hasta
+    // que el sensor esté listo; begin_I2C reconfigura el dispositivo cada vez.
+    for (int attempt = 0; attempt < 8 && !ok; attempt++) {
+        ok = bmp.begin_I2C(BMP388_I2C_ADDR, &Wire);
+        if (!ok) delay(50);
+    }
     if (ok) {
         bmp.setTemperatureOversampling(BMP3_OVERSAMPLING_8X);
         bmp.setPressureOversampling(BMP3_OVERSAMPLING_4X);

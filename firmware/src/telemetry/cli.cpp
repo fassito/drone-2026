@@ -33,7 +33,7 @@ static void print_help(Print &out) {
     out.println("autotune start|stop|status");
     out.println("pid save | pid load");
     out.println("selftest | json");
-    out.println("oled status|attitude|gps|obstacle");
+    out.println("oled status|attitude|baro|gps|obstacle");
     out.println("wifi on|off | reboot");
 }
 
@@ -236,12 +236,14 @@ void cli_process_line(const char *line, Print &out) {
             oled_set_view(OLED_VIEW_STATUS); out.println("OK vista status");
         } else if (sp && strstr(sp + 1, "attitude")) {
             oled_set_view(OLED_VIEW_ATTITUDE); out.println("OK vista attitude");
+        } else if (sp && strstr(sp + 1, "baro")) {
+            oled_set_view(OLED_VIEW_BARO); out.println("OK vista baro");
         } else if (sp && strstr(sp + 1, "gps")) {
             oled_set_view(OLED_VIEW_GPS); out.println("OK vista gps");
         } else if (sp && strstr(sp + 1, "obstacle")) {
             oled_set_view(OLED_VIEW_OBSTACLE); out.println("OK vista obstacle");
         } else {
-            out.println("uso: oled status|attitude|gps|obstacle");
+            out.println("uso: oled status|attitude|baro|gps|obstacle");
         }
     } else if (strcmp(cmd, "wifi") == 0) {
         if (sp && strstr(sp + 1, "on")) {

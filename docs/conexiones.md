@@ -138,6 +138,19 @@ La placa **NO** resuelve:
 | INA219 (batería) | SDA 21 / SCL 22 | Dirección 0x40; tensión + corriente |
 | BMP388 (barómetro) | SDA 21 / SCL 22 | Dirección 0x76 (o 0x77 si SDO a VCC) |
 
+> **Módulo CJMCU-388** (pines Vin/3Vo/Gnd/SCK/SDO/SDI/CS/INT) en modo **I2C**:
+>
+> | Pin módulo | Conexión |
+> |---|---|
+> | Vin | ESP32 3.3 V |
+> | Gnd | ESP32 GND |
+> | SCK | GPIO 22 (SCL) |
+> | SDI | GPIO 21 (SDA) |
+> | **CS** | **3.3 V** (obligatorio a alto para modo I2C) |
+> | **SDO** | **GND** → dirección 0x76 (a 3.3 V → 0x77) |
+> | 3Vo | sin conectar (salida regulada) |
+> | INT | sin conectar (interrupción no usada) |
+
 ### Salidas de motores (OneShot125)
 
 | Motor | Pin ESP32 | Posición | Giro |
