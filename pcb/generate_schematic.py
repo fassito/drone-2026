@@ -36,9 +36,14 @@ def find_block(text, i0):
     return text[i0:], len(text)
 
 
+# dentro del sandbox flatpak las librerías están en /app/extensions
+SYM_DIR_SANDBOX = "/app/extensions/Library/Symbols/symbols"
+
+
 def load_symbol(lib, name):
     """Extrae el bloque (symbol "name" ...) de la biblioteca."""
-    path = os.path.join(SYM_DIR, lib + ".kicad_sym")
+    base = SYM_DIR if os.path.isdir(SYM_DIR) else SYM_DIR_SANDBOX
+    path = os.path.join(base, lib + ".kicad_sym")
     src = open(path, encoding="utf-8").read()
     idx = src.find('(symbol "%s"' % name)
     if idx < 0:

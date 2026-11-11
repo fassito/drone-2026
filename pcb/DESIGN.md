@@ -147,28 +147,57 @@ arrancar, condición que el arranque normal necesita, y la base del transistor
 - ERC: **0 infracciones**.
 - Netlist: los 4 Sharp y los 4 motores conectados al GPIO esperado.
 
-## 9. Layout
+## 9. Layout y plano de masa
 
-Generado por [`pcb_layout.py`](pcb_layout.py) con la API `pcbnew` de KiCad:
+Generado por scripts con la API `pcbnew` de KiCad:
 
-- Contorno 75×75 mm en `Edge.Cuts`.
-- 4 agujeros M3 en patrón 30.5×30.5 mm (centro de la placa).
-- 33 huellas colocadas (empaquetado por estanterías, esquivando los agujeros).
-- Redes asignadas a todos los pads.
-- **DRC: 0 infracciones**. Quedan 86 elementos sin conectar: son las pistas
-  que faltan por enrutar.
+| Script | Qué hace |
+|---|---|
+| [`pcb_layout.py`](pcb_layout.py) | Contorno, agujeros M3, colocación de las 33 huellas y asignación de redes |
+| [`add_gnd_zone.py`](add_gnd_zone.py) | Plano de masa GND en `B.Cu` y relleno |
+
+Resultado:
+
+- Contorno **75 × 75 mm** en `Edge.Cuts` (lado elegido automáticamente: el
+  menor cuadrado donde todo cabe sin invadir los agujeros).
+- 4 agujeros M3 en patrón 30.5 × 30.5 mm.
+- 33 huellas sin solapes y dentro del contorno.
+- **Plano de masa GND** en la cara inferior con conexión térmica: resuelve
+  todas las conexiones de GND por sí solo.
+- **DRC: 0 infracciones.** Quedan 63 elementos sin conectar: las pistas que
+  faltan por enrutar.
 
 Regenerar:
 
 ```bash
 flatpak run --command=python3 org.kicad.KiCad pcb/pcb_layout.py
+flatpak run --command=python3 org.kicad.KiCad pcb/add_gnd_zone.py
 flatpak run --command=kicad-cli org.kicad.KiCad pcb drc \
     pcb/drone-2026.kicad_pcb -o pcb/drc.rpt
 ```
 
+### Guía de enrutado (en el editor de PCB)
+
+Orden recomendado:
+
+1. **`VBAT`** (XT-60 → ESC1-4): pista de **1.5–2 mm**, es la de más corriente.
+2. **`5V`** (BEC → buzzer, HC-12, Sharp, iBus) y **`3V3`**: **0.8 mm**.
+3. **`GND`**: ya resuelto por el plano; solo añade vías si hace falta.
+4. **Señales** (I2C, SPI, motores, iBus, GPS, HC-12, Sharp): **0.25–0.3 mm**.
+5. Al terminar, **volver a ejecutar `add_gnd_zone.py`** para rellenar el plano
+   con las pistas nuevas.
+
+Anchos ya definidos en `net_settings` del proyecto: `Default` 0.25 mm,
+clearance 0.2 mm.
+
+> Se intentó un auto-enrutador A* (rejilla + validación geométrica exacta),
+> pero a 2.54 mm de paso entre pads y con 0.2 mm de holgura los pasillos son
+> de menos de 0.1 mm y no producía resultados con DRC limpio. Se descartó en
+> favor del enrutado manual, que con el plano de masa ya hecho es rápido.
+
 ## 10. Pendiente
 
-1. Enrutado en el editor de PCB (pistas, planos de masa, vías).
+1. Enrutar las pistas restantes (ver guía arriba).
 2. Revisar DRC y exportar Gerbers.
 
 > La GUI se abre con `flatpak run org.kicad.KiCad`. Las bibliotecas oficiales

@@ -64,6 +64,20 @@ def pack(items, side, holes):
     return True, pos
 
 
+def nets_by_pad_number(lib, sym, netmap):
+    """Traduce un mapa cuyas claves pueden ser nombres de pin a números."""
+    if all(k.isdigit() for k in netmap):
+        return {k: v for k, v in netmap.items()}
+    raw = gs.load_symbol(lib, sym)
+    name_to_num = {nm: num for num, nm, _x, _y, _a in gs.parse_pins(raw)}
+    out = {}
+    for key, net in netmap.items():
+        num = key if key.isdigit() else name_to_num.get(key)
+        if num is not None:
+            out[num] = net
+    return out
+
+
 def main():
     board = pcbnew.BOARD()
     board.SetCopperLayerCount(2)
@@ -136,7 +150,8 @@ def main():
         it["fp"].SetPosition(pcbnew.VECTOR2I(mm(bx - it["dx"]),
                                              mm(by - it["dy"])))
 
-    netmaps = {ref: netmap for ref, _v, _l, _s, _c, _r, netmap in gs.COMPONENTS}
+    netmaps = {ref: nets_by_pad_number(lib, sym, netmap)
+               for ref, _v, lib, sym, _c, _r, netmap in gs.COMPONENTS}
     for it in items:
         for pad in it["fp"].Pads():
             name = netmaps[it["ref"]].get(pad.GetNumber())

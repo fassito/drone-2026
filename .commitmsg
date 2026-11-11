@@ -1,20 +1,17 @@
-Place the PCB: 75x75 mm, 33 footprints, nets assigned, DRC clean
+Add GND plane on B.Cu and fix net assignment for name-based pins
 
-Adds pcb_layout.py, which drives the KiCad pcbnew API to build the board
-from the same component table used for the schematic:
-
-- Board outline 75x75 mm on Edge.Cuts and four M3 holes on the standard
-  30.5x30.5 mm pattern. The side is chosen automatically as the smallest
-  square where every footprint fits without invading a hole.
-- Shelf packing with the holes as obstacles; the footprint bounding-box
-  offset is honoured so boxes land exactly where computed (a previous
-  attempt overlapped because the bbox is not centred on the origin).
-- Nets created and assigned to every pad; value text hidden to keep the
-  silkscreen clean.
-- Footprint assignment added to the schematic generator (all 33 symbols
-  now carry a footprint).
-
-Validation: no bounding-box overlaps, nothing outside the outline, DRC
-reports 0 violations. The 86 unconnected items are the unrouted tracks.
+- pcb_layout.py: nets were looked up only by pad number, so Q1 (B/C/E),
+  D1 and D2 (K/A) ended up with no net at all. The mapping now falls back
+  to the symbol pin name, resolved to a pad number via the library symbol.
+- pcb_layout.py: load_symbol falls back to the sandbox path when running
+  under flatpak (the host runtime path is not visible there).
+- add_gnd_zone.py: new script that creates and fills a GND zone on B.Cu
+  with thermal reliefs. Re-runnable after routing to refill.
+- Board regenerated: 75x75 mm, 33 footprints, GND plane, DRC 0 violations
+  (63 unrouted items remaining).
+- DESIGN.md: layout status and a routing guide; documents that an A* auto
+  router was attempted and discarded because at 2.54 mm pitch with 0.2 mm
+  clearance the corridors are under 0.1 mm wide and never reached a
+  DRC-clean result.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
