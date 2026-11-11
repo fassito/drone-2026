@@ -27,7 +27,7 @@ programada con el **framework Arduino** bajo **PlatformIO**.
 | PDB | Power Distribution Board con XT-60 | Reparte la batería a los 4 ESC y al BEC |
 | Receptor | FlySky FS-IA6B | 6 canales, iBus UART 115200 |
 | Emisora | FlySky FS-i6 | 6 canales, AFHDS 2A, compatible con iBus |
-| Batería | LiPo 3–6S | Alimenta ESCs; BEC/regulador para el ESP32 |
+| Batería | LiPo **4S 1550 mAh** (14.8 V) | Alimenta ESCs; BEC/regulador para el ESP32 |
 | IMU | MPU-9250 (GY-951) | 9DoF por SPI; fusión Madgwick en el ESP32 a 1 kHz |
 | GPS | u-blox NEO-6M-0-001 | NMEA por UART 9600; navegación, waypoints y RTH |
 | Monitor de batería | INA219 (I2C) | Monitor de tensión y corriente; alimenta el failsafe de batería baja |
@@ -44,7 +44,7 @@ programada con el **framework Arduino** bajo **PlatformIO**.
 | Frame | Cuadricóptero X ~210–250 mm (fibra de carbono) | 🔴 pendiente |
 | Hélices | 5" (p. ej. 5045 tri-blade), 2 CW + 2 CCW + repuestos | 🔴 pendiente |
 | BEC 5 V | 5 V / 3 A (los ESC BLHeli 30A son OPTO, sin BEC) | 🔴 pendiente |
-| LiPo | 3S o 4S con XT-60 (recomendado para DX2205 2300 KV) | 🔴 pendiente |
+| LiPo | **4S 1550 mAh 100C** con XT-60 (DX2205 2300 KV) | 🔴 pendiente |
 | Cargador LiPo | Balanceado (IMAX B6 o similar) + bolsa ignífuga | 🔴 pendiente |
 | **Nivelador iBus** | Divisor resistivo 5 V→3.3 V (2.2 kΩ + 4.7 kΩ) o módulo nivelador para GPIO34 | 🟡 **obligatorio** |
 | Soporte antivibración | Goma/espuma para la IMU MPU-9250 | 🟡 obligatorio |

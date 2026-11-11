@@ -16,3 +16,4 @@ pcb/__pycache__/
 pcb/*.net
 pcb/*.rpt
 pcb/gerbers/
+pcb/render.png

@@ -295,4 +295,6 @@ GPS TX (5V) ──► R1 = 2.2 kΩ ──┬──► GPIO35
   y ADC2 queda bloqueado con el WiFi activo.
 - La lectura es I2C (lenta): se hace a baja frecuencia en una tarea separada; el
   failsafe consume el último valor válido.
-- Umbral de batería baja en `config.h` (`BATTERY_LOW_V`), según la LiPo usada.
+- Umbral de batería baja en `config.h`: **4S** → `BATTERY_LOW_V = 14.0 V`
+  (3.50 V/celda) y `BATTERY_CRITICAL_V = 13.2 V` (3.30 V/celda).
+  Si cambias de batería, ajusta ambos valores y `BATTERY_CELLS`.

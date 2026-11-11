@@ -57,8 +57,10 @@
 
 // Monitor de batería INA219 (I2C) — comparte el bus I2C con la OLED.
 #define INA219_I2C_ADDR 0x40
-#define BATTERY_LOW_V     10.5f   // umbral de batería baja (3S) — ajustar al voltaje de la LiPo
-#define BATTERY_CELLS    3        // celdas de la LiPo (3S por defecto)
+// LiPo 4S (14.8 V nominal). Aviso a 3.50 V/celda y corte a 3.30 V/celda:
+// por debajo de 3.3 V la celda se degrada de forma irreversible.
+#define BATTERY_LOW_V     14.0f   // 4S: 3.50 V/celda → aterrizar
+#define BATTERY_CELLS    4        // celdas de la LiPo
 
 // Barómetro BMP388 (I2C) — comparte el bus I2C con OLED e INA219.
 #define BMP388_I2C_ADDR 0x76     // 0x77 si el pin SDO del BMP388 está a VCC
@@ -83,8 +85,12 @@
 #define BUZZER_PIN 15
 
 // ---------- Seguridad (failsafe) ----------
-#define BATTERY_CRITICAL_V 10.0f   // tensión crítica (3S) → corte
-#define MAX_CURRENT_A      20.0f   // sobrecorriente → corte
+#define BATTERY_CRITICAL_V 13.2f   // 4S: 3.30 V/celda → corte de motores
+// El INA219 mide solo la rama del BEC (la corriente de los motores no pasa
+// por su shunt de 0.1 Ω). Este límite detecta un cortocircuito en la
+// electrónica, no una hélice bloqueada: eso lo cubren la caída de tensión y
+// el límite de inclinación.
+#define MAX_CURRENT_A       2.0f
 
 // ---------- Habilitación de periféricos ----------
 // Encender cada uno en 1 conforme se conecte (evita leer pines RX flotantes).
