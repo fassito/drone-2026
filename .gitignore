@@ -7,3 +7,12 @@
 .vscode/
 .idea/
 *.code-workspace
+
+# KiCad (artefactos generados)
+*.kicad_prl
+*-backups/
+*.lck
+pcb/__pycache__/
+pcb/*.net
+pcb/*.rpt
+pcb/gerbers/

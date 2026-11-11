@@ -74,11 +74,64 @@ Ver [`netlist.csv`](netlist.csv) (104 conexiones) y [`BOM.csv`](BOM.csv).
 - Fabricante: JLCPCB / PCBWay, 2 capas, FR-4 1.6 mm, cobre 1 oz (2 oz en VBAT).
 - Conector DevKit: tiras de pines hembra 2.54 mm (30 pines, solo se usan 25).
 
-## 7. Pendiente (requiere GUI de KiCad)
+## 7. Estado del esquemático
 
-1. Esquemático: importar [`netlist.csv`](netlist.csv) y colocar símbolos.
-2. Layout: footprints, enrutado, planos de masa.
-3. ERC + DRC, exportar Gerbers.
+Generado por script con [`generate_schematic.py`](generate_schematic.py):
+
+- 33 componentes, 28 redes, símbolos incrustados (no depende del buscador).
+- **ERC: 0 infracciones**.
+- Netlist exportada y verificada contra [`netlist.csv`](netlist.csv).
+
+Regenerar tras cambiar conexiones:
+
+```bash
+python3 pcb/generate_schematic.py
+flatpak run --command=kicad-cli org.kicad.KiCad sch erc \
+    pcb/drone-2026.kicad_sch -o pcb/erc.rpt
+```
+
+### Pinout de J1 (VERIFICAR contra la placa física)
+
+| Pin | Señal | Red | Pin | Señal | Red |
+|---|---|---|---|---|---|
+| 1 | EN | — | 2 | 3V3 | 3V3 |
+| 3 | VP / IO36 | SHARP_FR | 4 | GND | GND |
+| 5 | VN / IO39 | SHARP_L | 6 | IO15 | — |
+| 7 | IO34 | IBUS_RX | 8 | IO2 | LED_PIN |
+| 9 | IO35 | GPS_RX | 10 | IO4 | GPS_TX |
+| 11 | IO32 | MOTOR3 | 12 | IO16 | HC12_RX |
+| 13 | IO33 | MOTOR4 | 14 | IO17 | HC12_TX |
+| 15 | IO25 | MOTOR1 | 16 | IO5 | SPI_CS_IMU |
+| 17 | IO26 | MOTOR2 | 18 | IO18 | SPI_SCK |
+| 19 | IO27 | BUZZER_PIN | 20 | IO19 | SPI_MISO |
+| 21 | IO14 | — | 22 | IO21 | I2C_SDA |
+| 23 | IO12 | — | 24 | IO22 | I2C_SCL |
+| 25 | IO13 | HC12_SET | 26 | IO23 | SPI_MOSI |
+| 27 | GND | GND | 28 | GND | GND |
+| 29 | VIN | 5V | 30 | 3V3 | 3V3 |
+
+> ⚠️ Este mapeo debe confirmarse con la serigrafía de la placa antes de
+> fabricar. Si tu DevKit difiere, edita `ESP32_PINOUT` en
+> [`generate_schematic.py`](generate_schematic.py) y regenera.
+
+## 8. Limitación detectada: sensores Sharp R y B
+
+**GPIO37 y GPIO38 no están disponibles** en el DevKit V1 de 30 pines (solo se
+exponen VP=IO36 y VN=IO39). Por eso en el esquemático los conectores de los
+Sharp **R** (U9) y **B** (U10) quedan sin señal (marcados como no conectados).
+
+Opciones:
+
+1. **Reasignar pines** (recomendado): mover `MOTOR3` de IO32→IO12 y
+   `MOTOR4` de IO33→IO14, liberando IO32/IO33 (ADC1) para Sharp R y B.
+   Requiere actualizar `firmware/src/config.h`.
+2. Usar solo 2 sensores Sharp (delantero y trasero).
+3. Cambiar a un módulo de 38 pines.
+
+## 9. Pendiente
+
+1. Layout en el editor de PCB: colocar huellas, enrutar, planos de masa.
+2. DRC y exportación de Gerbers.
 
 > La GUI se abre con `flatpak run org.kicad.KiCad`. Las bibliotecas oficiales
-> de símbolos y footprints se instalan como extensión flatpak.
+> de símbolos y footprints están instaladas como extensión flatpak.
