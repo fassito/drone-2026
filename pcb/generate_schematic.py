@@ -80,12 +80,12 @@ ESP32_PINOUT = {
     "5": "SHARP_L",   # VN / IO39
     "7": "IBUS_RX",   # IO34
     "9": "GPS_RX",    # IO35
-    "11": "MOTOR3",   # IO32
-    "13": "MOTOR4",   # IO33
+    "11": "SHARP_R",  # IO32 (ADC1)
+    "13": "SHARP_B",  # IO33 (ADC1)
     "15": "MOTOR1",   # IO25
     "17": "MOTOR2",   # IO26
-    "19": "BUZZER_PIN",  # IO27
-    "21": None,       # IO14
+    "19": "MOTOR4",   # IO27
+    "21": "MOTOR3",   # IO14
     "23": None,       # IO12
     "25": "HC12_SET", # IO13
     "27": "GND",
@@ -93,7 +93,7 @@ ESP32_PINOUT = {
     # lado par (columna derecha, arriba->abajo)
     "2": "3V3",
     "4": "GND",
-    "6": None,        # IO15
+    "6": "BUZZER_PIN",  # IO15
     "8": "LED_PIN",   # IO2
     "10": "GPS_TX",   # IO4
     "12": "HC12_RX",  # IO16
@@ -133,9 +133,9 @@ COMPONENTS = [
     ("U8", "SHARP-FR", "Connector_Generic", "Conn_01x03", 0, 2, {
         "1": "5V", "2": "GND", "3": "SHARP_FR"}),
     ("U9", "SHARP-R", "Connector_Generic", "Conn_01x03", 1, 2, {
-        "1": "5V", "2": "GND", "3": None}),
+        "1": "5V", "2": "GND", "3": "SHARP_R"}),
     ("U10", "SHARP-B", "Connector_Generic", "Conn_01x03", 2, 2, {
-        "1": "5V", "2": "GND", "3": None}),
+        "1": "5V", "2": "GND", "3": "SHARP_B"}),
     ("U11", "SHARP-L", "Connector_Generic", "Conn_01x03", 3, 2, {
         "1": "5V", "2": "GND", "3": "SHARP_L"}),
 

@@ -11,11 +11,13 @@
 #define MONITOR_SPEED 115200
 
 // ---------- Pines ----------
-// Motores (OneShot125) — salidas LEDC de alta resolución
+// Motores (OneShot125) — salidas LEDC de alta resolución.
+// Se evitan los pines de strapping (GPIO12/MTDI y GPIO15/MTDO) para no
+// condicionar el arranque: un nivel erróneo en ellos impide bootear.
 #define MOTOR_PIN_1 25
 #define MOTOR_PIN_2 26
-#define MOTOR_PIN_3 32
-#define MOTOR_PIN_4 33
+#define MOTOR_PIN_3 14
+#define MOTOR_PIN_4 27
 
 // Receptor FS-IA6B (iBus, UART). GPIO34 es solo de entrada.
 #define IBUS_UART_NUM 1
@@ -63,19 +65,22 @@
 #define BMP388_SDO_HIGH false    // true si SDO está a VCC (cambia la dirección a 0x77)
 
 // Sensores de proximidad (evitar choques): 4x Sharp GP2Y0A21 (IR analógico,
-// 10–80 cm) en los canales ADC1. Se usan GPIO 36–39 porque ADC2 entra en
-// conflicto con el WiFi activo.
+// 10–80 cm) en los canales ADC1. Solo se usan los ADC1 expuestos en el
+// DevKit V1 de 30 pines (36, 39, 32, 33): GPIO37/38 no salen al conector.
+// ADC2 entra en conflicto con el WiFi activo, por eso no se usan.
 #define PROX_SENSOR_COUNT 4
-#define PROX_PIN_FRONT  36
-#define PROX_PIN_RIGHT  37
-#define PROX_PIN_BACK   38
-#define PROX_PIN_LEFT   39
+#define PROX_PIN_FRONT  36   // VP
+#define PROX_PIN_RIGHT  32
+#define PROX_PIN_BACK   33
+#define PROX_PIN_LEFT   39   // VN
 
 // LED de estado integrado
 #define LED_BUILTIN 2
 
 // Buzzer 5V (avisos de armado/failsafe/batería baja).
-#define BUZZER_PIN 27
+// GPIO15 es pin de strapping (MTDO): queda alto al arrancar y la base del
+// transistor (1k) no lo fuerza, así que no afecta al boot.
+#define BUZZER_PIN 15
 
 // ---------- Seguridad (failsafe) ----------
 #define BATTERY_CRITICAL_V 10.0f   // tensión crítica (3S) → corte

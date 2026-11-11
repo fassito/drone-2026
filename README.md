@@ -48,7 +48,7 @@ programada con el **framework Arduino** bajo **PlatformIO**.
 | Cargador LiPo | Balanceado (IMAX B6 o similar) + bolsa ignífuga | 🔴 pendiente |
 | **Nivelador iBus** | Divisor resistivo 5 V→3.3 V (2.2 kΩ + 4.7 kΩ) o módulo nivelador para GPIO34 | 🟡 **obligatorio** |
 | Soporte antivibración | Goma/espuma para la IMU MPU-9250 | 🟡 obligatorio |
-| Buzzer 5 V | Avisos de armado/failsafe/batería baja (GPIO 27) | 🟡 implementado en código, comprar pieza |
+| Buzzer 5 V | Avisos de armado/failsafe/batería baja (GPIO 15) | 🟡 implementado en código, comprar pieza |
 | Monitor de batería | INA219 (ya en BOM) | ✅ decidido |
 | Barómetro | BMP388 (ya en BOM) | ✅ decidido |
 | Telemetría en vuelo | HC-12 (ya en BOM) | ✅ decidido |

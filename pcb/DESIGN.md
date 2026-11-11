@@ -114,19 +114,36 @@ flatpak run --command=kicad-cli org.kicad.KiCad sch erc \
 > fabricar. Si tu DevKit difiere, edita `ESP32_PINOUT` en
 > [`generate_schematic.py`](generate_schematic.py) y regenera.
 
-## 8. Limitación detectada: sensores Sharp R y B
+## 8. Reasignación de pines (aplicada)
 
-**GPIO37 y GPIO38 no están disponibles** en el DevKit V1 de 30 pines (solo se
-exponen VP=IO36 y VN=IO39). Por eso en el esquemático los conectores de los
-Sharp **R** (U9) y **B** (U10) quedan sin señal (marcados como no conectados).
+**GPIO37 y GPIO38 no se exponen** en el DevKit V1 de 30 pines (solo VP=IO36 y
+VN=IO39), así que la asignación original dejaba los Sharp derecho y trasero sin
+señal. Se reasignaron pines para que **los 4 Sharp usen ADC1**:
 
-Opciones:
+| Función | Antes | Ahora |
+|---|---|---|
+| Sharp FR | IO36 | IO36 (VP) |
+| Sharp R | IO37 ✗ | **IO32** |
+| Sharp B | IO38 ✗ | **IO33** |
+| Sharp L | IO39 | IO39 (VN) |
+| MOTOR3 | IO32 | **IO14** |
+| MOTOR4 | IO33 | **IO27** |
+| Buzzer | IO27 | **IO15** |
 
-1. **Reasignar pines** (recomendado): mover `MOTOR3` de IO32→IO12 y
-   `MOTOR4` de IO33→IO14, liberando IO32/IO33 (ADC1) para Sharp R y B.
-   Requiere actualizar `firmware/src/config.h`.
-2. Usar solo 2 sensores Sharp (delantero y trasero).
-3. Cambiar a un módulo de 38 pines.
+### Por qué no se usó GPIO12
+
+GPIO12 (MTDI) es un pin de *strapping*: si está alto al arrancar, el ESP32
+selecciona 1.8 V para la flash y **no bootea**. Se descartó como salida de motor
+para no añadir una resistencia de pull-down obligatoria.
+
+GPIO15 (MTDO) sí es strapping, pero se usa para el **buzzer**: queda alto al
+arrancar, condición que el arranque normal necesita, y la base del transistor
+(1 kΩ) no lo fuerza. Efecto secundario: puede sonar un pitido breve al bootear.
+
+### Verificación
+
+- ERC: **0 infracciones**.
+- Netlist: los 4 Sharp y los 4 motores conectados al GPIO esperado.
 
 ## 9. Pendiente
 

@@ -22,8 +22,8 @@ description: 'Integrar el módulo de radio HC-12 (433/868/915 MHz) como enlace d
 1. **Leer** [hc12-config.md](./references/hc12-config.md) para modos FU, comandos AT y cableado.
 2. **Cableado** (módulo HC-12):
    ```
-   HC-12 TX  ──► GPIO27 (SoftwareSerial RX)
-   HC-12 RX  ──► GPIO14 (SoftwareSerial TX)
+   HC-12 TX  ──► GPIO16 (UART2 RX)
+   HC-12 RX  ──► GPIO17 (UART2 TX)
    HC-12 SET ──► GPIO13 (salida; HIGH = modo AT)
    HC-12 VCC ──► 5 V rail (soporta 3.2–5.5 V)
    HC-12 GND ──► GND

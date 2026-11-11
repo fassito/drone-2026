@@ -108,10 +108,10 @@ La placa **NO** resuelve:
                             │                                           │
   ESC 1 ───(OneShot125)────►│ GPIO25                                   │
   ESC 2 ───(OneShot125)────►│ GPIO26                                   │
-  ESC 3 ───(OneShot125)────►│ GPIO32                                   │
-  ESC 4 ───(OneShot125)────►│ GPIO33                                   │
+  ESC 3 ───(OneShot125)────►│ GPIO14                                   │
+  ESC 4 ───(OneShot125)────►│ GPIO27                                   │
                             │                                           │
-  Buzzer 5V ────────────────│ GPIO27                                   │
+  Buzzer 5V ────────────────│ GPIO15                                   │
   LED estado ───────────────│ GPIO2                                    │
                             └───────────────────────────────────────────┘
 ```
@@ -157,27 +157,32 @@ La placa **NO** resuelve:
 |---|---|---|---|
 | ESC 1 | GPIO 25 | Delante-derecha (FR) | CW |
 | ESC 2 | GPIO 26 | Detrás-izquierda (RL) | CW |
-| ESC 3 | GPIO 32 | Delante-izquierda (FL) | CCW |
-| ESC 4 | GPIO 33 | Detrás-derecha (RR) | CCW |
+| ESC 3 | GPIO 14 | Delante-izquierda (FL) | CCW |
+| ESC 4 | GPIO 27 | Detrás-derecha (RR) | CCW |
+
+> GPIO32/33 se liberan para los sensores Sharp (ADC1). Se evitan GPIO12 y
+> GPIO15 como salidas de motor: son pines de *strapping* y un nivel erróneo
+> al arrancar impide el boot.
 
 ### Entradas analógicas (Sharp GP2Y0A21, ADC1)
 
 | Sensor | Pin ESP32 | Dirección |
 |---|---|---|
-| Sharp FR | GPIO 36 | Frente |
-| Sharp R | GPIO 37 | Derecha |
-| Sharp B | GPIO 38 | Atrás |
-| Sharp L | GPIO 39 | Izquierda |
+| Sharp FR | GPIO 36 (VP) | Frente |
+| Sharp R | GPIO 32 | Derecha |
+| Sharp B | GPIO 33 | Atrás |
+| Sharp L | GPIO 39 (VN) | Izquierda |
 
 ### Salidas auxiliares
 
 | Periférico | Pin ESP32 | Notas |
 |---|---|---|
-| Buzzer 5 V | GPIO 27 | Avisos de armado/failsafe/batería |
+| Buzzer 5 V | GPIO 15 | Avisos de armado/failsafe/batería |
 | LED estado | GPIO 2 | Integrado en placa (strapping: mantener alto al arrancar) |
 
-> Se usan los 4 pines de **ADC1** (36–39). ADC2 queda descartado porque entra en
-> conflicto con el WiFi activo.
+> Solo se usan los **ADC1 expuestos en el DevKit V1 de 30 pines**: 36 (VP),
+> 39 (VN), 32 y 33. **GPIO37 y GPIO38 no salen al conector** en esta placa.
+> ADC2 queda descartado porque entra en conflicto con el WiFi activo.
 
 ---
 
@@ -279,7 +284,7 @@ GPS TX (5V) ──► R1 = 2.2 kΩ ──┬──► GPIO35
   fuera de la banda 2.4 GHz del mando FS-i6.
 - Es un stream serie transparente: reutiliza el mismo parser de comandos de la
   WiFi CLI (leer/escribir por el HC-12).
-- Conexión: TX→GPIO27, RX→GPIO14, SET→GPIO13, VCC→5 V. Ver skill
+- Conexión: TX→GPIO16, RX→GPIO17, SET→GPIO13, VCC→5 V. Ver skill
   [hc12-telemetry](../.github/skills/hc12-telemetry/SKILL.md).
 
 ### Monitor de batería (INA219, I2C)
