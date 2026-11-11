@@ -1,0 +1,17 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "553f9f58-e057-43a7-aa08-62ee8321d384")
+	(paper "A4")
+	(title_block
+		(title "Drone-2026")
+		(date "2026-11-11")
+		(rev "1.0")
+		(company "fassito")
+	)
+	(lib_symbols)
+	(sheet_instances
+		(path "/" (page "1"))
+	)
+)
