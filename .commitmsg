@@ -1,15 +1,14 @@
-Enlarge the board to 90x90 mm for hand routing
+Strip the board to components and nets; add a guided routing document
 
-With 3.5 mm between footprints the board grows to 90x90 mm, which leaves
-wide corridors for manual routing. Placement, mounting holes and the GND
-plane are unchanged and DRC stays at 0 violations with 63 unrouted items.
+Per the request to leave only what has to be connected, the delivered
+board now contains the 33 footprints with their nets, the 90x90 mm
+outline and the four M3 holes. No tracks, vias or zones.
 
-An A* autorouter (2 layers, vias, exact geometric validation, per-net
-rollback) was implemented and evaluated at 75, 90 and 160 mm. It only ever
-routed 1-6 of the 29 nets before deadlocking: when several adjacent pads of
-a connector need to escape, the first track occupies the corridor the next
-one needs, and without rip-up-and-retry there is no way out. The code was
-removed rather than left in the tree as broken tooling; DESIGN.md records
-the finding so it is not attempted again blindly.
+- generate_routing_guide.py: reads the board and writes GUIA_ENRUTADO.md
+  listing every net in routing order with its pads, their coordinates in
+  mm, the recommended track width and a note per block. Multi-pad nets are
+  chained by nearest neighbour so the suggested path flows.
+- DESIGN.md: documents that routing is manual and why the A* autorouter
+  was dropped.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

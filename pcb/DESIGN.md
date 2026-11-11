@@ -147,58 +147,50 @@ arrancar, condición que el arranque normal necesita, y la base del transistor
 - ERC: **0 infracciones**.
 - Netlist: los 4 Sharp y los 4 motores conectados al GPIO esperado.
 
-## 9. Layout y plano de masa
+## 9. Layout
 
-Generado por scripts con la API `pcbnew` de KiCad:
+La placa entregada contiene **solo los componentes y las redes**: sin pistas,
+sin vías y sin plano de masa. El enrutado es manual, guiado por
+[`GUIA_ENRUTADO.md`](GUIA_ENRUTADO.md).
 
 | Script | Qué hace |
 |---|---|
 | [`pcb_layout.py`](pcb_layout.py) | Contorno, agujeros M3, colocación de las 33 huellas y asignación de redes |
-| [`add_gnd_zone.py`](add_gnd_zone.py) | Plano de masa GND en `B.Cu` y relleno |
+| [`generate_routing_guide.py`](generate_routing_guide.py) | Genera `GUIA_ENRUTADO.md` con cada red, sus pads y coordenadas |
+| [`add_gnd_zone.py`](add_gnd_zone.py) | (opcional) crea y rellena el plano de masa GND en `B.Cu` |
 
-Resultado:
+Estado actual:
 
-- Contorno **90 × 90 mm** en `Edge.Cuts` (lado elegido automáticamente: el
-  menor cuadrado donde todo cabe sin invadir los agujeros). La separación
-  entre huellas es de 3.5 mm a propósito: deja pasillos amplios para enrutar
-  a mano.
+- Contorno **90 × 90 mm** en `Edge.Cuts`.
 - 4 agujeros M3 en patrón 30.5 × 30.5 mm.
-- 33 huellas sin solapes y dentro del contorno.
-- **Plano de masa GND** en la cara inferior con conexión térmica: resuelve
-  todas las conexiones de GND por sí solo.
-- **DRC: 0 infracciones.** Quedan 63 elementos sin conectar: las pistas que
-  faltan por enrutar.
+- 33 huellas sin solapes, todas dentro del contorno.
+- 30 redes asignadas a sus pads (sin cobre).
+- Separación entre huellas de **3.5 mm**: pasillos amplios para enrutar.
 
-Regenerar:
+Regenerar desde cero:
 
 ```bash
 flatpak run --command=python3 org.kicad.KiCad pcb/pcb_layout.py
-flatpak run --command=python3 org.kicad.KiCad pcb/add_gnd_zone.py
-flatpak run --command=kicad-cli org.kicad.KiCad pcb drc \
-    pcb/drone-2026.kicad_pcb -o pcb/drc.rpt
+flatpak run --command=python3 org.kicad.KiCad pcb/generate_routing_guide.py
 ```
 
-### Guía de enrutado (en el editor de PCB)
+### Orden de enrutado
 
-Orden recomendado:
+1. **`VBAT`** — 1.5 mm: XT-60 → ESC1-4 → INA219.
+2. **`5V`** y **`3V3`** — 0.8 mm.
+3. **`I2C_SDA`/`I2C_SCL`** — 0.3 mm, en paralelo.
+4. **`SPI_*`** — 0.3 mm, cortas y lejos de `VBAT`.
+5. **Señales** (motores, iBus, GPS, HC-12, Sharp, buzzer) — 0.3 mm.
+6. **`GND`** — plano en `B.Cu` (o `add_gnd_zone.py`).
 
-1. **`VBAT`** (XT-60 → ESC1-4): pista de **1.5–2 mm**, es la de más corriente.
-2. **`5V`** (BEC → buzzer, HC-12, Sharp, iBus) y **`3V3`**: **0.8 mm**.
-3. **`GND`**: ya resuelto por el plano; solo añade vías si hace falta.
-4. **Señales** (I2C, SPI, motores, iBus, GPS, HC-12, Sharp): **0.25–0.3 mm**.
-5. Al terminar, **volver a ejecutar `add_gnd_zone.py`** para rellenar el plano
-   con las pistas nuevas.
+### Nota sobre el auto-enrutado
 
-Anchos ya definidos en `net_settings` del proyecto: `Default` 0.25 mm,
-clearance 0.2 mm.
-
-> **Auto-enrutado: descartado.** Se probó un A* en dos capas con vías,
-> validación geométrica exacta y rollback por red. Resultados: entre 1 y 6
-> redes de 29, con DRC limpio en lo poco que enrutaba. La causa no es el
-> espacio (se probaron placas de 75, 90 y 160 mm) sino un **deadlock greedy**:
-> al escapar varios pads contiguos de un conector, la primera pista ocupa el
-> pasillo que necesita la siguiente, y sin *rip-up and retry* no se resuelve.
-> Se eliminó el código para no dejar herramientas que no cumplen.
+Se implementó y evaluó un A* en dos capas con vías, validación geométrica
+exacta y rollback por red, probando placas de 75, 90 y 160 mm. Solo enrutaba
+entre 1 y 6 de las 29 redes antes de bloquearse: al escapar varios pads
+contiguos de un conector, la primera pista ocupa el pasillo que necesita la
+siguiente, y sin *rip-up and retry* no hay solución. Se eliminó el código para
+no dejar herramientas que no cumplen.
 
 ## 10. Pendiente
 
