@@ -101,6 +101,9 @@
 #define ENABLE_HC12     0    // radio telemetría (Fase 4)
 #define ENABLE_IBUS     0    // FS-IA6B (Fase 5)
 #define ENABLE_SHARP    0    // GP2Y0A21 ADC (Fase 6)
+#define ENABLE_INA219   0    // monitor de batería (Fase 2). En 0 el failsafe
+                             // de batería no actúa (útil mientras no está
+                             // cableado Vin+/Vin-).
 
 // ---------- Bucle de control ----------
 #define LOOP_FREQ_HZ 1000

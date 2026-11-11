@@ -271,7 +271,9 @@ static void slow_sensors_tick(void) {
 #endif
 #if ENABLE_I2C
     g_telemetry.baro = bmp388_read();
+#if ENABLE_INA219
     g_telemetry.power = power_monitor_read();
+#endif
 #endif
 
     // Guardar home al primer fix GPS (para RTH).
@@ -354,8 +356,16 @@ void setup() {
                       (int)b.valid, b.temperature_c, b.pressure_hpa, b.altitude_m);
         Serial.flush();
     }
+#if ENABLE_INA219
     Serial.print("[i2c] ina init...\n"); Serial.flush();
     power_monitor_init();
+    {
+        const power_state_t p = power_monitor_read();
+        Serial.printf("[ina] ok=%d v=%.2fV i=%.3fA\n",
+                      (int)p.valid, p.bus_voltage_v, p.current_a);
+        Serial.flush();
+    }
+#endif
     Serial.print("[i2c] oled init...\n"); Serial.flush();
     oled_init();
     Serial.print("[i2c] oled ok\n"); Serial.flush();
