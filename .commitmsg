@@ -1,12 +1,15 @@
-Add ENABLE_INA219 flag and expose power state at boot
+Enable the INA219 now that it is detected on the bus
 
-The INA219 is wired to I2C but not detected yet (no 0x40 on the bus).
-While it is absent, the firmware treated the reading as valid-but-zero
-volts and the battery failsafe would block arming. The new ENABLE_INA219
-flag (default 0, like the other peripherals) keeps the power monitor out
-of the failsafe until the module is detected and Vin+/Vin- are wired.
+The module was miswired; after fixing it the scan shows 0x3C, 0x40 and
+0x76 and the chip reads back correctly ([ina] ok=1).
 
-Also prints "[ina] ok=... v=... i=..." at boot so bring-up of the module
-is visible on the serial console.
+- ENABLE_INA219 -> 1.
+- BATTERY_MIN_PLAUSIBLE_V (6.0 V): the failsafe now ignores voltage
+  readings below any real 4S pack. Without Vin+/Vin- wired the INA219
+  reads ~0.9 V, which would otherwise be taken as a flat battery and
+  block arming. A missing sensor now means "no voltage protection"
+  instead of a false "battery critical".
+
+Firmware builds, 136/136 host tests pass.
 
 Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

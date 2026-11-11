@@ -113,8 +113,11 @@ static void control_task(void *arg) {
         failsafe_set_imu_link(att.valid);
         failsafe_set_throttle_min(throttle_min);
         if (g_telemetry.power.valid) {
-            failsafe_set_battery_low(g_telemetry.power.bus_voltage_v < BATTERY_CRITICAL_V);
-            failsafe_set_overcurrent(g_telemetry.power.current_a > MAX_CURRENT_A);
+            const float vbat = g_telemetry.power.bus_voltage_v;
+            const bool plausible = vbat > BATTERY_MIN_PLAUSIBLE_V;
+            failsafe_set_battery_low(plausible && vbat < BATTERY_CRITICAL_V);
+            failsafe_set_overcurrent(plausible
+                                     && g_telemetry.power.current_a > MAX_CURRENT_A);
         }
         failsafe_tick();
 

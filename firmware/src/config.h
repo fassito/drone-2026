@@ -86,6 +86,10 @@
 
 // ---------- Seguridad (failsafe) ----------
 #define BATTERY_CRITICAL_V 13.2f   // 4S: 3.30 V/celda → corte de motores
+// Por debajo de esto la lectura no es creíble (INA219 sin Vin+/Vin-
+// cableados, o sensor desconectado): el failsafe de tensión se inhibe para
+// no confundir "sensor ausente" con "batería agotada".
+#define BATTERY_MIN_PLAUSIBLE_V 6.0f
 // El INA219 mide solo la rama del BEC (la corriente de los motores no pasa
 // por su shunt de 0.1 Ω). Este límite detecta un cortocircuito en la
 // electrónica, no una hélice bloqueada: eso lo cubren la caída de tensión y
@@ -101,9 +105,7 @@
 #define ENABLE_HC12     0    // radio telemetría (Fase 4)
 #define ENABLE_IBUS     0    // FS-IA6B (Fase 5)
 #define ENABLE_SHARP    0    // GP2Y0A21 ADC (Fase 6)
-#define ENABLE_INA219   0    // monitor de batería (Fase 2). En 0 el failsafe
-                             // de batería no actúa (útil mientras no está
-                             // cableado Vin+/Vin-).
+#define ENABLE_INA219   1    // monitor de batería (Fase 2)
 
 // ---------- Bucle de control ----------
 #define LOOP_FREQ_HZ 1000
