@@ -70,7 +70,9 @@ Ver [`netlist.csv`](netlist.csv) (104 conexiones) y [`BOM.csv`](BOM.csv).
 
 ## 6. Montaje / fabricación
 
-- Dimensiones objetivo: **50×50 mm** (ajustable al frame final).
+- Dimensiones: **75×75 mm** (elegidas automáticamente por `pcb_layout.py`:
+  el lado más pequeño donde caben las 33 huellas sin invadir los agujeros
+  M3 ni solapar serigrafía).
 - Fabricante: JLCPCB / PCBWay, 2 capas, FR-4 1.6 mm, cobre 1 oz (2 oz en VBAT).
 - Conector DevKit: tiras de pines hembra 2.54 mm (30 pines, solo se usan 25).
 
@@ -145,10 +147,29 @@ arrancar, condición que el arranque normal necesita, y la base del transistor
 - ERC: **0 infracciones**.
 - Netlist: los 4 Sharp y los 4 motores conectados al GPIO esperado.
 
-## 9. Pendiente
+## 9. Layout
 
-1. Layout en el editor de PCB: colocar huellas, enrutar, planos de masa.
-2. DRC y exportación de Gerbers.
+Generado por [`pcb_layout.py`](pcb_layout.py) con la API `pcbnew` de KiCad:
+
+- Contorno 75×75 mm en `Edge.Cuts`.
+- 4 agujeros M3 en patrón 30.5×30.5 mm (centro de la placa).
+- 33 huellas colocadas (empaquetado por estanterías, esquivando los agujeros).
+- Redes asignadas a todos los pads.
+- **DRC: 0 infracciones**. Quedan 86 elementos sin conectar: son las pistas
+  que faltan por enrutar.
+
+Regenerar:
+
+```bash
+flatpak run --command=python3 org.kicad.KiCad pcb/pcb_layout.py
+flatpak run --command=kicad-cli org.kicad.KiCad pcb drc \
+    pcb/drone-2026.kicad_pcb -o pcb/drc.rpt
+```
+
+## 10. Pendiente
+
+1. Enrutado en el editor de PCB (pistas, planos de masa, vías).
+2. Revisar DRC y exportar Gerbers.
 
 > La GUI se abre con `flatpak run org.kicad.KiCad`. Las bibliotecas oficiales
 > de símbolos y footprints están instaladas como extensión flatpak.

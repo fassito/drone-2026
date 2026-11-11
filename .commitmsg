@@ -1,0 +1,20 @@
+Place the PCB: 75x75 mm, 33 footprints, nets assigned, DRC clean
+
+Adds pcb_layout.py, which drives the KiCad pcbnew API to build the board
+from the same component table used for the schematic:
+
+- Board outline 75x75 mm on Edge.Cuts and four M3 holes on the standard
+  30.5x30.5 mm pattern. The side is chosen automatically as the smallest
+  square where every footprint fits without invading a hole.
+- Shelf packing with the holes as obstacles; the footprint bounding-box
+  offset is honoured so boxes land exactly where computed (a previous
+  attempt overlapped because the bbox is not centred on the origin).
+- Nets created and assigned to every pad; value text hidden to keep the
+  silkscreen clean.
+- Footprint assignment added to the schematic generator (all 33 symbols
+  now carry a footprint).
+
+Validation: no bounding-box overlaps, nothing outside the outline, DRC
+reports 0 violations. The 86 unconnected items are the unrouted tracks.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

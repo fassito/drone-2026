@@ -177,6 +177,24 @@ COMPONENTS = [
 ]
 
 
+def footprint_for(lib, sym):
+    """Huella correspondiente a cada símbolo."""
+    m = re.match(r"Conn_01x(\d\d)$", sym)
+    if m:
+        return ("Connector_PinHeader_2.54mm:PinHeader_1x%s_P2.54mm_Vertical"
+                % m.group(1))
+    if sym == "Conn_02x15_Odd_Even":
+        return "Connector_PinSocket_2.54mm:PinSocket_2x15_P2.54mm_Vertical"
+    return {
+        "R": "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P7.62mm_Horizontal",
+        "C": "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm",
+        "LED": "LED_THT:LED_D5.0mm",
+        "D": "Diode_THT:D_DO-35_SOD27_P7.62mm_Horizontal",
+        "Buzzer": "Buzzer_Beeper:Buzzer_12x9.5RM7.6",
+        "Q_NPN_BEC": "Package_TO_SOT_THT:TO-92_Inline",
+    }.get(sym, "")
+
+
 def main():
     lib_cache = {}
     body = []
@@ -204,8 +222,9 @@ def main():
         body.append('\t\t(property "Value" "%s" (at %.2f %.2f 0)'
                     ' (effects (font (size 1.27 1.27)) (justify left)))'
                     % (value, cx, cy + 2))
-        body.append('\t\t(property "Footprint" "" (at %.2f %.2f 0)'
-                    ' (effects (font (size 1.27 1.27)) (hide yes)))' % (cx, cy))
+        fp = footprint_for(lib, sym)
+        body.append('\t\t(property "Footprint" "%s" (at %.2f %.2f 0)'
+                    ' (effects (font (size 1.27 1.27)) (hide yes)))' % (fp, cx, cy))
         body.append('\t\t(property "Datasheet" "" (at %.2f %.2f 0)'
                     ' (effects (font (size 1.27 1.27)) (hide yes)))' % (cx, cy))
 
