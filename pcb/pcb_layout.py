@@ -23,7 +23,7 @@ OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                    "drone-2026.kicad_pcb")
 
 MARGIN = 2.0      # margen libre desde el borde de la placa
-GAP = 1.6         # separación entre huellas
+GAP = 3.5         # separación entre huellas (deja sitio para enrutar)
 HOLE_CLEAR = 1.5  # holgura alrededor de cada agujero M3
 
 
@@ -113,7 +113,7 @@ def main():
     items.sort(key=lambda d: d["w"] * d["h"], reverse=True)
 
     side = None
-    for candidate in range(50, 106, 5):
+    for candidate in range(50, 161, 5):
         holes = [(candidate / 2 + dx, candidate / 2 + dy, 1.6 + HOLE_CLEAR)
                  for dx, dy in ((-15.25, -15.25), (15.25, -15.25),
                                 (-15.25, 15.25), (15.25, 15.25))]

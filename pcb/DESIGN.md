@@ -70,9 +70,9 @@ Ver [`netlist.csv`](netlist.csv) (104 conexiones) y [`BOM.csv`](BOM.csv).
 
 ## 6. Montaje / fabricación
 
-- Dimensiones: **75×75 mm** (elegidas automáticamente por `pcb_layout.py`:
-  el lado más pequeño donde caben las 33 huellas sin invadir los agujeros
-  M3 ni solapar serigrafía).
+- Dimensiones: **90×90 mm** (elegidas automáticamente por `pcb_layout.py`:
+  el lado más pequeño donde caben las 33 huellas con 3.5 mm de separación
+  sin invadir los agujeros M3 ni solapar serigrafía).
 - Fabricante: JLCPCB / PCBWay, 2 capas, FR-4 1.6 mm, cobre 1 oz (2 oz en VBAT).
 - Conector DevKit: tiras de pines hembra 2.54 mm (30 pines, solo se usan 25).
 
@@ -158,8 +158,10 @@ Generado por scripts con la API `pcbnew` de KiCad:
 
 Resultado:
 
-- Contorno **75 × 75 mm** en `Edge.Cuts` (lado elegido automáticamente: el
-  menor cuadrado donde todo cabe sin invadir los agujeros).
+- Contorno **90 × 90 mm** en `Edge.Cuts` (lado elegido automáticamente: el
+  menor cuadrado donde todo cabe sin invadir los agujeros). La separación
+  entre huellas es de 3.5 mm a propósito: deja pasillos amplios para enrutar
+  a mano.
 - 4 agujeros M3 en patrón 30.5 × 30.5 mm.
 - 33 huellas sin solapes y dentro del contorno.
 - **Plano de masa GND** en la cara inferior con conexión térmica: resuelve
@@ -190,10 +192,13 @@ Orden recomendado:
 Anchos ya definidos en `net_settings` del proyecto: `Default` 0.25 mm,
 clearance 0.2 mm.
 
-> Se intentó un auto-enrutador A* (rejilla + validación geométrica exacta),
-> pero a 2.54 mm de paso entre pads y con 0.2 mm de holgura los pasillos son
-> de menos de 0.1 mm y no producía resultados con DRC limpio. Se descartó en
-> favor del enrutado manual, que con el plano de masa ya hecho es rápido.
+> **Auto-enrutado: descartado.** Se probó un A* en dos capas con vías,
+> validación geométrica exacta y rollback por red. Resultados: entre 1 y 6
+> redes de 29, con DRC limpio en lo poco que enrutaba. La causa no es el
+> espacio (se probaron placas de 75, 90 y 160 mm) sino un **deadlock greedy**:
+> al escapar varios pads contiguos de un conector, la primera pista ocupa el
+> pasillo que necesita la siguiente, y sin *rip-up and retry* no se resuelve.
+> Se eliminó el código para no dejar herramientas que no cumplen.
 
 ## 10. Pendiente
 
