@@ -1,0 +1,16 @@
+Document the Arduino Nano 4way-if route for programming the ESCs
+
+No Windows and no Wine needed: the official 4way-if firmware ships in the
+BLHeliSuite GitHub repository (Interfaces/Arduino4w-if) and avrdude runs
+natively on Linux.
+
+- Records the exact firmware file for a 16 MHz Nano (MULTIv20006).
+- Adds the authoritative pinout from the BLHeliSuite 4w-if pinout manual,
+  table "Arduino Nano Multi" - servo wire interface: GND common and ESC
+  1..4 on D3, D4, D5, D6. The C2 table is for bare SiLabs chips, not for
+  ESC signal wires.
+- Notes that an OPTO BLHeli_S ESC needs battery power to be programmed
+  (no props) and that esc-configurator is the Linux-native tool for
+  BLHeli_S while BLHeliSuite32 only applies to BLHeli_32.
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

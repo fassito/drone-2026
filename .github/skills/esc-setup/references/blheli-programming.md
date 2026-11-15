@@ -32,17 +32,53 @@ confirmado de **OneShot125** y **Damped Light**. Por tanto:
 > Comprobar la serigrafía del ESC para el rango de batería. La serie XM admite
 > 4S sin problema, que es lo que usa este dron.
 
-## 2. Hardware para programar
+## 2. Hardware para programar (Arduino Nano, sin Windows)
 
-Los ESC van sueltos (no en una placa 4-en-1), así que hace falta un enlace:
+Como no hay controladora de vuelo, hace falta un adaptador **4way-if**. Con un
+**Arduino Nano** (ATmega328P) se resuelve sin instalar Windows ni Wine:
 
-- **BLHeliLink / USB linker** (CP2102 + resistencia) → conector de 3 hilos del ESC
-  (GND, señal, GND), **sin batería** si el ESC es OPTO con BEC de programación.
-- Alternativa: **Arduino UNO como 4-way interface** (BLHeliSuite tiene el
-  firmware "Arduino 4way-if").
+1. Descargar el firmware oficial (repositorio de BLHeliSuite):
+   `Interfaces/Arduino4w-if/4wArduino_Nano__16_MULTIv20006.hex`
+   (`MULTI` = 8 ESC; `PB3PB4`/`PD3PD2` son variantes de un solo pin)
+2. Grabarlo con **avrdude**, que funciona en Linux de forma nativa:
+   ```bash
+   avrdude -c arduino -p atmega328p -P /dev/ttyUSB0 -b 57600 \
+           -D -U flash:w:4wArduino_Nano__16_MULTIv20006.hex:i
+   ```
+   Baudios: **57600** en clones con bootloader antiguo, **115200** en Optiboot.
+   Si no se tiene avrdude instalado (requiere root), se puede extraer de su RPM
+   con `rpm2cpio` a una carpeta local y usar `LD_LIBRARY_PATH`.
 
-Conexión del linker al ESC: `GND – Signal – GND` (el ESC se alimenta del enlace
-para leer/escribir la flash).
+### Pinout del Nano con el firmware MULTI (autoritativo)
+
+Del manual *BLHeliSuite 4w-if interfaces pinout*, tabla **"Arduino Nano Multi
+and PD3/PD2" → servo wire Interface**:
+
+| ESC | Pin del Nano | Pin MCU |
+|---|---|---|
+| **GND (todos)** | **GND** | GND |
+| ESC 1 | **D3** | PD3 |
+| ESC 2 | **D4** | PD4 |
+| ESC 3 | **D5** | PD5 |
+| ESC 4 | **D6** | PD6 |
+
+(ESC 5–8 serían D7, D8, D9, D10 — solo en la variante MULTI.)
+
+> La otra tabla del manual (C2D/C2CK en D12/D11/D10…) es para programar el
+> **chip SiLabs desnudo** por el bus C2. Nuestros ESC se programan por el
+> **cable de señal** (servo wire Interface), no por C2.
+
+### Alimentación al programar
+
+Un ESC BLHeli_S **OPTO** (como el XM30A) necesita **alimentación de batería**
+para que su MCU funcione: el 4way-if solo lleva la señal y GND. Conectar la
+LiPo al ESC **con las hélices desmontadas**.
+
+### Alternativa: Wine
+
+BLHeliSuite es Windows. Existe documentación oficial de Wine
+(`Manuals/BLHeliSuiteWine.pdf`) y `wine` está en los repos de Fedora, pero la
+ruta del Nano + avrdude evita esa dependencia por completo.
 
 ## 3. Clonar la configuración a los 4 ESC
 
@@ -57,11 +93,9 @@ para leer/escribir la flash).
 6. Vuelve a cada ESC y haz `Read Setup` para **verificar** que los 4 devuelven
    los mismos valores.
 
-> Atajo: muchos ESC BLHeli_S se pueden programar por el **passthrough del
-> controlador de vuelo**. Aquí NO hay controladora de vuelo (el ESP32 es el
-> controlador), así que hace falta un adaptador **4-way interface**:
-> un Arduino Nano/Uno con el firmware `4way-if`, o un dongle BLHeliLink.
-> Con cualquiera de los dos funciona esc-configurator por Web Serial.
+> Herramienta en Linux: **esc-configurator.com** (Web Serial) con el Nano como
+> 4way-if, o **BLHeliSuite** bajo Wine. Para BLHeli_S no hace falta
+> BLHeliSuite32, que es exclusivo de BLHeli_32.
 
 ## 4. Configuración recomendada (dron de 5", 2205 2300 KV, 4S)
 
