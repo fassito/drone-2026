@@ -23,7 +23,7 @@ programada con el **framework Arduino** bajo **PlatformIO**.
 |---|---|---|
 | Microcontrolador | ESP32 DevKit V1 (ESP32-WROOM-32, 30 pines) | 240 MHz, dual-core, WiFi |
 | Motores | 4× Crozepony DX2205 | 2300 KV, brushless |
-| ESC | 4× BLHeli 30A | OneShot125, 3–6S |
+| ESC | 4× BLHeli 30A | OneShot125; programar los 4 igual (ver skill esc-setup) |
 | PDB | Power Distribution Board con XT-60 | Reparte la batería a los 4 ESC y al BEC |
 | Receptor | FlySky FS-IA6B | 6 canales, iBus UART 115200 |
 | Emisora | FlySky FS-i6 | 6 canales, AFHDS 2A, compatible con iBus |
@@ -116,7 +116,7 @@ El firmware ya está **implementado y compila** (`pio run` → SUCCESS):
 | `sensors/bmp388.*` — barómetro I2C | ✅ implementado |
 | `safety/` — failsafe (batería/sobrecorriente), INA219, indicadores (buzzer), black box, autotest | ✅ implementado |
 | `radio/ibus.*` — FS-IA6B (UART1) | ✅ implementado |
-| `actuators/esc.*` — OneShot125 (LEDC) | ✅ implementado |
+| `actuators/esc.*` — OneShot125 (LEDC), rampa y `motortest` | ✅ implementado |
 | `telemetry/` — WiFi CLI, HC-12, OLED, telemetría JSON, OTA | ✅ implementado |
 | `main.cpp` — tareas dual-core | ✅ integrado |
 

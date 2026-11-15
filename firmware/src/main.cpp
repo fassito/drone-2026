@@ -215,13 +215,24 @@ static void control_task(void *arg) {
 
         // 7) Control de vuelo y salida a motores.
         float motor[4] = {0, 0, 0, 0};
-        if (armed) {
+        esc_bench_tick(millis());
+        if (esc_bench_active()) {
+            // Prueba en banco (SIN HÉLICES): un motor a valor fijo.
+            for (int i = 0; i < 4; i++) {
+                esc_write_normalized(
+                    (uint8_t)i,
+                    (i == (int)esc_bench_motor()) ? esc_bench_value() : 0.0f);
+            }
+        } else if (armed) {
+            if (!esc_is_armed()) {
+                esc_arm();
+            }
             flight_control_update(&g_fc, mode_eff, roll_sp, pitch_sp, yaw_sp,
                                   throttle_cmd, &att, motor);
             for (int i = 0; i < 4; i++) {
                 esc_write_normalized(i, motor[i]);
             }
-        } else {
+        } else if (esc_is_armed() && !esc_bench_active()) {
             esc_disarm();
         }
 

@@ -33,6 +33,7 @@ static void print_help(Print &out) {
     out.println("autotune start|stop|status");
     out.println("pid save | pid load");
     out.println("selftest | json");
+    out.println("motortest <1-4> <0-100> [ms] | motortest stop");
     out.println("oled status|attitude|baro|gps|obstacle");
     out.println("wifi on|off | reboot");
 }
@@ -240,6 +241,29 @@ void cli_process_line(const char *line, Print &out) {
         failsafe_disarm();
         esc_disarm();
         out.println("OK desarmado");
+    } else if (strcmp(cmd, "motortest") == 0) {
+        // Prueba en banco: SIN HÉLICES y con el dron sujeto.
+        if (sp && strstr(sp + 1, "stop")) {
+            esc_bench_stop();
+            out.println("OK motortest detenido");
+        } else {
+            int m = 0, pct = 0;
+            unsigned dur = 1500;
+            const int n = (sp != nullptr)
+                          ? sscanf(sp + 1, "%d %d %u", &m, &pct, &dur) : 0;
+            if (n < 2 || m < 1 || m > 4 || pct < 0 || pct > 100) {
+                out.println("uso: motortest <1-4> <0-100> [ms<=5000]");
+                out.println("     motortest stop");
+            } else if (failsafe_get_state().mode == FS_ARMED) {
+                out.println("ERROR desarma antes de probar motores");
+            } else {
+                esc_bench_start((uint8_t)(m - 1), pct / 100.0f, dur);
+                out.print("AVISO: SIN HELICES. motor ");
+                out.print(m); out.print(" al ");
+                out.print(pct); out.print("% durante ");
+                out.print(dur); out.println(" ms");
+            }
+        }
     } else if (strcmp(cmd, "oled") == 0) {
         if (sp && strstr(sp + 1, "status")) {
             oled_set_view(OLED_VIEW_STATUS); out.println("OK vista status");
