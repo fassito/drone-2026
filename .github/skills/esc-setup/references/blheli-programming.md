@@ -19,6 +19,19 @@ Se reconoce al conectar: BLHeliSuite lee la MCU y muestra la familia
 cambiarlo o usar PWM estándar (1000–2000 µs), y entonces el firmware necesita
 otro modo de señal.
 
+## 1b. Modelo concreto de este proyecto: DYS XM30A (XM mini 30 A V2)
+
+Es un ESC de la **familia BLHeli_S** (MCU SiLabs **EFM8BB21**), con soporte
+confirmado de **OneShot125** y **Damped Light**. Por tanto:
+
+- **NO necesita BLHeliSuite32** (esa herramienta es solo para BLHeli_32/ARM).
+- La herramienta adecuada en Linux es **esc-configurator.com** (BLHeli_S).
+- Es **OPTO** (sin BEC): la electrónica se alimenta del BEC externo de 5 V.
+- Lleva condensador electrolítico propio en los cables de alimentación.
+
+> Comprobar la serigrafía del ESC para el rango de batería. La serie XM admite
+> 4S sin problema, que es lo que usa este dron.
+
 ## 2. Hardware para programar
 
 Los ESC van sueltos (no en una placa 4-en-1), así que hace falta un enlace:
@@ -45,8 +58,10 @@ para leer/escribir la flash).
    los mismos valores.
 
 > Atajo: muchos ESC BLHeli_S se pueden programar por el **passthrough del
-> controlador de vuelo**. Aquí no aplica directamente, pero permite lo mismo:
-> leer uno, guardar el `.ini`, y escribirlo en los demás.
+> controlador de vuelo**. Aquí NO hay controladora de vuelo (el ESP32 es el
+> controlador), así que hace falta un adaptador **4-way interface**:
+> un Arduino Nano/Uno con el firmware `4way-if`, o un dongle BLHeliLink.
+> Con cualquiera de los dos funciona esc-configurator por Web Serial.
 
 ## 4. Configuración recomendada (dron de 5", 2205 2300 KV, 4S)
 
